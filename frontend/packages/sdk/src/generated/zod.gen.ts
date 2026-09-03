@@ -1669,6 +1669,8 @@ export const zAgentInteraction = z.object({
     agent_id: zAgentId,
     tool_call_id: zToolCallId,
     tool_name: z.string().optional(),
+    agent_name: zAgentName.optional(),
+    subagent_handle: z.string().optional(),
     interaction_kind: zAgentInteractionKind,
     state: zAgentInteractionState,
     request: zInteractionForm,
@@ -3822,6 +3824,7 @@ export const zListAgentInteractionsPath = z.object({
 
 export const zListAgentInteractionsQuery = z.object({
     state: zAgentInteractionState.optional(),
+    include_subagents: z.boolean().optional(),
     limit: z.int().gte(1).lte(100).optional().default(50),
     cursor: z.string().max(1024).optional()
 });
