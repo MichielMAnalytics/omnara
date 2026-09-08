@@ -120,7 +120,7 @@ func (s *Store) LaunchAgent(
 		IdempotencyKey:  input.IdempotencyKey,
 	}
 	if input.Subagent != nil {
-		if _, err := prepareSubagentLaunchTx(ctx, tx, qtx, input.ProjectID, input.Name, *input.Subagent); err != nil {
+		if _, err := prepareSubagentLaunchTx(ctx, tx, qtx, input.ProjectID, *input.Subagent); err != nil {
 			return LaunchAgentResult{}, err
 		}
 		insertInput.ParentAgentID = input.Subagent.ParentAgentID
