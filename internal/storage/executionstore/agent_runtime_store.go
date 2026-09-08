@@ -32,6 +32,7 @@ type insertAgentInput struct {
 	ParentAgentID           ID
 	SubagentKey             string
 	ArchiveAfterIdleMinutes *int
+	TimeoutSeconds          *int
 }
 
 type AgentRecord struct {
@@ -98,6 +99,7 @@ func insertAgentWithProjectLifecycleLockTx(
 		ParentAgentID:           sqlcIDFromNil(input.ParentAgentID),
 		SubagentKey:             input.SubagentKey,
 		ArchiveAfterIdleMinutes: sqlcInt32Ptr(input.ArchiveAfterIdleMinutes),
+		TimeoutSeconds:          sqlcInt32Ptr(input.TimeoutSeconds),
 	})
 	if err == nil {
 		record := agentRecordFromInsertSQLC(row)
@@ -384,7 +386,9 @@ func (s *Store) ArchiveAgent(
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 	qtx := dbsqlc.New(tx)
-	machines, err := archiveAgentTreeTx(ctx, tx, qtx, txNotifications, projectID, agentID, actor, true)
+	machines, err := archiveAgentTreeTx(
+		ctx, tx, qtx, txNotifications, projectID, agentID, actor, SubagentMessageKindArchived,
+	)
 	if err != nil {
 		return AgentRecord{}, nil, err
 	}
@@ -520,7 +524,7 @@ func archiveAgentTreeTx(
 	txNotifications *notifications.TxNotifications,
 	projectID, agentID ID,
 	actor *ActorParams,
-	notifyParent bool,
+	notifyParentKind string,
 ) ([]MachineRecord, error) {
 	if _, err := qtx.LockAgentInProject(
 		ctx,
@@ -545,7 +549,7 @@ func archiveAgentTreeTx(
 	}
 	var machines []MachineRecord
 	for _, childID := range childIDs {
-		released, err := archiveAgentTreeTx(ctx, tx, qtx, txNotifications, projectID, childID, actor, false)
+		released, err := archiveAgentTreeTx(ctx, tx, qtx, txNotifications, projectID, childID, actor, "")
 		if err != nil {
 			return nil, err
 		}
@@ -556,10 +560,10 @@ func archiveAgentTreeTx(
 		return nil, err
 	}
 	machines = append(machines, released...)
-	if notifyParent && !alreadyArchived && !isNilID(agent.ParentAgentID) {
-		if err := handleSubagentMessageTx(ctx, txNotifications, tx, qtx, agent, subagentMessage{
-			Kind:           SubagentMessageKindArchived,
-			IdempotencyKey: "archived:" + agent.ID.String(),
+	if notifyParentKind != "" && !alreadyArchived && !isNilID(agent.ParentAgentID) {
+		if err := notifyParentAgentTx(ctx, txNotifications, tx, qtx, agent, subagentMessage{
+			Kind:           notifyParentKind,
+			IdempotencyKey: notifyParentKind + ":" + agent.ID.String(),
 		}); err != nil {
 			return nil, err
 		}
