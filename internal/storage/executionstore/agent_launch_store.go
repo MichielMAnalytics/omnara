@@ -125,7 +125,7 @@ func (s *Store) LaunchAgent(
 		}
 		insertInput.ParentAgentID = input.Subagent.ParentAgentID
 		insertInput.SpawnToolCallID = input.Subagent.SpawnToolCallID
-		insertInput.SubagentHandle = input.Subagent.Handle
+		insertInput.SubagentKey = input.Subagent.Key
 		insertInput.ArchiveAfterIdleMinutes = input.Subagent.ArchiveAfterIdleMinutes
 		if input.Subagent.ShareParentMachines {
 			machineSources = nil

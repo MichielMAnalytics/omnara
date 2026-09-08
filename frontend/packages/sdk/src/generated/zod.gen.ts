@@ -964,7 +964,7 @@ export const zCreateAgentRequest = z.object({
 export const zSubagentSummary = z.object({
     id: zAgentId,
     name: zAgentName,
-    handle: z.string(),
+    key: z.string(),
     state: z.enum([
         'running',
         'idle',
@@ -998,7 +998,7 @@ export const zAgent = z.object({
     current_config_id: zAgentConfigId.optional(),
     model: zAgentModel.optional(),
     parent_agent_id: zAgentId.optional(),
-    subagent_handle: z.string().optional(),
+    subagent_key: z.string().optional(),
     created_at: zTimestamp,
     updated_at: zTimestamp,
     archived_at: zTimestamp.optional()
@@ -1658,7 +1658,7 @@ export const zAgentInteraction = z.object({
     tool_call_id: zToolCallId,
     tool_name: z.string().optional(),
     agent_name: zAgentName.optional(),
-    subagent_handle: z.string().optional(),
+    subagent_key: z.string().optional(),
     interaction_kind: zAgentInteractionKind,
     state: zAgentInteractionState,
     request: zInteractionForm,

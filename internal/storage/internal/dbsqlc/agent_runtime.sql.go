@@ -64,7 +64,7 @@ SELECT id, org_id, project_id, state, name,
        agent_profile_id, current_config_id, integration_target_id,
        coalesce(idempotency_key, '') AS idempotency_key,
        next_event_sequence, created_at, updated_at, archived_at,
-       parent_agent_id, subagent_handle
+       parent_agent_id, subagent_key
 FROM agents
 WHERE id = $1
 `
@@ -88,7 +88,7 @@ type GetAgentRow struct {
 	UpdatedAt           time.Time
 	ArchivedAt          *time.Time
 	ParentAgentID       *uuid.UUID
-	SubagentHandle      string
+	SubagentKey         string
 }
 
 func (q *Queries) GetAgent(ctx context.Context, arg GetAgentParams) (GetAgentRow, error) {
@@ -109,7 +109,7 @@ func (q *Queries) GetAgent(ctx context.Context, arg GetAgentParams) (GetAgentRow
 		&i.UpdatedAt,
 		&i.ArchivedAt,
 		&i.ParentAgentID,
-		&i.SubagentHandle,
+		&i.SubagentKey,
 	)
 	return i, err
 }
@@ -119,7 +119,7 @@ SELECT agent.id, agent.org_id, agent.project_id, agent.state, agent.name,
        agent.agent_profile_id, agent.current_config_id, agent.integration_target_id,
        coalesce(agent.idempotency_key, '') AS idempotency_key,
        agent.next_event_sequence, agent.created_at, agent.updated_at, agent.archived_at,
-       agent.parent_agent_id, agent.subagent_handle,
+       agent.parent_agent_id, agent.subagent_key,
        coalesce(configured_model.name, '') AS model_name,
        coalesce(model_provider_config.name, '') AS model_provider_config_name
 FROM agents agent
@@ -156,7 +156,7 @@ type GetAgentByIdempotencyKeyRow struct {
 	UpdatedAt               time.Time
 	ArchivedAt              *time.Time
 	ParentAgentID           *uuid.UUID
-	SubagentHandle          string
+	SubagentKey             string
 	ModelName               string
 	ModelProviderConfigName string
 }
@@ -181,7 +181,7 @@ func (q *Queries) GetAgentByIdempotencyKey(ctx context.Context, arg GetAgentById
 		&i.UpdatedAt,
 		&i.ArchivedAt,
 		&i.ParentAgentID,
-		&i.SubagentHandle,
+		&i.SubagentKey,
 		&i.ModelName,
 		&i.ModelProviderConfigName,
 	)
@@ -193,7 +193,7 @@ SELECT agent.id, agent.org_id, agent.project_id, agent.state, agent.name,
        agent.agent_profile_id, agent.current_config_id, agent.integration_target_id,
        coalesce(agent.idempotency_key, '') AS idempotency_key,
        agent.next_event_sequence, agent.created_at, agent.updated_at, agent.archived_at,
-       agent.parent_agent_id, agent.subagent_handle,
+       agent.parent_agent_id, agent.subagent_key,
        coalesce(configured_model.name, '') AS model_name,
        coalesce(model_provider_config.name, '') AS model_provider_config_name
 FROM agents agent
@@ -229,7 +229,7 @@ type GetAgentInProjectRow struct {
 	UpdatedAt               time.Time
 	ArchivedAt              *time.Time
 	ParentAgentID           *uuid.UUID
-	SubagentHandle          string
+	SubagentKey             string
 	ModelName               string
 	ModelProviderConfigName string
 }
@@ -254,7 +254,7 @@ func (q *Queries) GetAgentInProject(ctx context.Context, arg GetAgentInProjectPa
 		&i.UpdatedAt,
 		&i.ArchivedAt,
 		&i.ParentAgentID,
-		&i.SubagentHandle,
+		&i.SubagentKey,
 		&i.ModelName,
 		&i.ModelProviderConfigName,
 	)
@@ -265,7 +265,7 @@ const insertAgent = `-- name: InsertAgent :one
 WITH inserted AS (
     INSERT INTO agents(
         org_id, project_id, state, name, agent_profile_id, current_config_id,
-        idempotency_key, parent_agent_id, spawn_tool_call_id, subagent_handle,
+        idempotency_key, parent_agent_id, spawn_tool_call_id, subagent_key,
         archive_after_idle_minutes, created_at, updated_at
     )
     VALUES (
@@ -279,13 +279,13 @@ WITH inserted AS (
     RETURNING id, org_id, project_id, state, name,
               agent_profile_id, current_config_id, integration_target_id,
               idempotency_key, next_event_sequence, created_at, updated_at, archived_at,
-              parent_agent_id, subagent_handle
+              parent_agent_id, subagent_key
 )
 SELECT agent.id, agent.org_id, agent.project_id, agent.state, agent.name,
        agent.agent_profile_id, agent.current_config_id, agent.integration_target_id,
        coalesce(agent.idempotency_key, '') AS idempotency_key,
        agent.next_event_sequence, agent.created_at, agent.updated_at, agent.archived_at,
-       agent.parent_agent_id, agent.subagent_handle,
+       agent.parent_agent_id, agent.subagent_key,
        coalesce(configured_model.name, '') AS model_name,
        coalesce(model_provider_config.name, '') AS model_provider_config_name
 FROM inserted agent
@@ -309,7 +309,7 @@ type InsertAgentParams struct {
 	IdempotencyKey          *string
 	ParentAgentID           *uuid.UUID
 	SpawnToolCallID         *uuid.UUID
-	SubagentHandle          string
+	SubagentKey             string
 	ArchiveAfterIdleMinutes *int32
 }
 
@@ -328,7 +328,7 @@ type InsertAgentRow struct {
 	UpdatedAt               time.Time
 	ArchivedAt              *time.Time
 	ParentAgentID           *uuid.UUID
-	SubagentHandle          string
+	SubagentKey             string
 	ModelName               string
 	ModelProviderConfigName string
 }
@@ -345,7 +345,7 @@ func (q *Queries) InsertAgent(ctx context.Context, arg InsertAgentParams) (Inser
 		arg.IdempotencyKey,
 		arg.ParentAgentID,
 		arg.SpawnToolCallID,
-		arg.SubagentHandle,
+		arg.SubagentKey,
 		arg.ArchiveAfterIdleMinutes,
 	)
 	var i InsertAgentRow
@@ -364,7 +364,7 @@ func (q *Queries) InsertAgent(ctx context.Context, arg InsertAgentParams) (Inser
 		&i.UpdatedAt,
 		&i.ArchivedAt,
 		&i.ParentAgentID,
-		&i.SubagentHandle,
+		&i.SubagentKey,
 		&i.ModelName,
 		&i.ModelProviderConfigName,
 	)
@@ -387,7 +387,7 @@ SELECT agent.id,
        agent.updated_at,
        agent.archived_at,
        agent.parent_agent_id,
-       agent.subagent_handle,
+       agent.subagent_key,
        coalesce(install.provider, '') AS integration_target_provider,
        coalesce(install.provider_tenant_id, '') AS integration_target_provider_tenant_id,
        coalesce(target.provider_ref, '') AS integration_target_provider_ref,
@@ -440,7 +440,7 @@ WHERE agent.project_id = $8
 SELECT id, org_id, project_id, state, name, agent_profile_id, current_config_id,
        integration_target_id, idempotency_key,
        next_event_sequence, created_at, updated_at,
-       archived_at, parent_agent_id, subagent_handle, integration_target_provider,
+       archived_at, parent_agent_id, subagent_key, integration_target_provider,
        integration_target_provider_tenant_id, integration_target_provider_ref,
        integration_target_provider_ref_kind,
        integration_target_display_name, model_name,
@@ -493,7 +493,7 @@ type ListAgentsForProjectRow struct {
 	UpdatedAt                         time.Time
 	ArchivedAt                        *time.Time
 	ParentAgentID                     *uuid.UUID
-	SubagentHandle                    string
+	SubagentKey                       string
 	IntegrationTargetProvider         string
 	IntegrationTargetProviderTenantID string
 	IntegrationTargetProviderRef      string
@@ -545,7 +545,7 @@ func (q *Queries) ListAgentsForProject(ctx context.Context, arg ListAgentsForPro
 			&i.UpdatedAt,
 			&i.ArchivedAt,
 			&i.ParentAgentID,
-			&i.SubagentHandle,
+			&i.SubagentKey,
 			&i.IntegrationTargetProvider,
 			&i.IntegrationTargetProviderTenantID,
 			&i.IntegrationTargetProviderRef,
@@ -581,7 +581,7 @@ SELECT agent.id,
        agent.updated_at,
        agent.archived_at,
        agent.parent_agent_id,
-       agent.subagent_handle,
+       agent.subagent_key,
        coalesce(install.provider, '') AS integration_target_provider,
        coalesce(install.provider_tenant_id, '') AS integration_target_provider_tenant_id,
        coalesce(target.provider_ref, '') AS integration_target_provider_ref,
@@ -655,7 +655,7 @@ type ListAgentsForProjectByCreatedAtDescRow struct {
 	UpdatedAt                         time.Time
 	ArchivedAt                        *time.Time
 	ParentAgentID                     *uuid.UUID
-	SubagentHandle                    string
+	SubagentKey                       string
 	IntegrationTargetProvider         string
 	IntegrationTargetProviderTenantID string
 	IntegrationTargetProviderRef      string
@@ -702,7 +702,7 @@ func (q *Queries) ListAgentsForProjectByCreatedAtDesc(ctx context.Context, arg L
 			&i.UpdatedAt,
 			&i.ArchivedAt,
 			&i.ParentAgentID,
-			&i.SubagentHandle,
+			&i.SubagentKey,
 			&i.IntegrationTargetProvider,
 			&i.IntegrationTargetProviderTenantID,
 			&i.IntegrationTargetProviderRef,
@@ -736,7 +736,7 @@ SELECT agent.id,
        agent.updated_at,
        agent.archived_at,
        agent.parent_agent_id,
-       agent.subagent_handle,
+       agent.subagent_key,
        coalesce(install.provider, '') AS integration_target_provider,
        coalesce(install.provider_tenant_id, '') AS integration_target_provider_tenant_id,
        coalesce(target.provider_ref, '') AS integration_target_provider_ref,
@@ -789,7 +789,7 @@ type ListRecentAgentsForProjectsRow struct {
 	UpdatedAt                         time.Time
 	ArchivedAt                        *time.Time
 	ParentAgentID                     *uuid.UUID
-	SubagentHandle                    string
+	SubagentKey                       string
 	IntegrationTargetProvider         string
 	IntegrationTargetProviderTenantID string
 	IntegrationTargetProviderRef      string
@@ -823,7 +823,7 @@ func (q *Queries) ListRecentAgentsForProjects(ctx context.Context, arg ListRecen
 			&i.UpdatedAt,
 			&i.ArchivedAt,
 			&i.ParentAgentID,
-			&i.SubagentHandle,
+			&i.SubagentKey,
 			&i.IntegrationTargetProvider,
 			&i.IntegrationTargetProviderTenantID,
 			&i.IntegrationTargetProviderRef,

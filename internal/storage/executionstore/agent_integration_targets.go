@@ -143,6 +143,6 @@ func agentRecordFromSetIntegrationTargetSQLC(row dbsqlc.SetAgentIntegrationTarge
 		row.UpdatedAt,
 		row.ArchivedAt,
 		row.ParentAgentID,
-		row.SubagentHandle,
+		row.SubagentKey,
 	)
 }
