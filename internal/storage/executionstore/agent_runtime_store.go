@@ -32,7 +32,6 @@ type insertAgentInput struct {
 	ParentAgentID           ID
 	SubagentKey             string
 	ArchiveAfterIdleMinutes *int
-	TimeoutSeconds          *int
 }
 
 type AgentRecord struct {
@@ -99,7 +98,6 @@ func insertAgentWithProjectLifecycleLockTx(
 		ParentAgentID:           sqlcIDFromNil(input.ParentAgentID),
 		SubagentKey:             input.SubagentKey,
 		ArchiveAfterIdleMinutes: sqlcInt32Ptr(input.ArchiveAfterIdleMinutes),
-		TimeoutSeconds:          sqlcInt32Ptr(input.TimeoutSeconds),
 	})
 	if err == nil {
 		record := agentRecordFromInsertSQLC(row)
