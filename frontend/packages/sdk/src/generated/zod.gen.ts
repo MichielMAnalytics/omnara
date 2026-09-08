@@ -968,7 +968,7 @@ export const zSubagentSummary = z.object({
     state: z.enum([
         'running',
         'idle',
-        'waiting_on_parent',
+        'waiting_on_human',
         'archived'
     ]),
     last_activity_at: zTimestamp
