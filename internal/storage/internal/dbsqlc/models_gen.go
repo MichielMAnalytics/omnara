@@ -149,7 +149,6 @@ type AgentWait struct {
 	ToolCallID  uuid.UUID
 	Mode        string
 	State       string
-	DeadlineAt  *time.Time
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	CompletedAt *time.Time
