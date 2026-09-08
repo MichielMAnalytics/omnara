@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"reflect"
 	"testing"
 	"time"
@@ -2046,6 +2047,14 @@ func (m testPoolMachineManager) ProvisionMachine(
 		return nil
 	}
 	return m.provision(ctx, orgID, machineID)
+}
+
+func (m testPoolMachineManager) StartLaunchProvisioning(
+	context.Context,
+	*slog.Logger,
+	storage.ID,
+	[]storage.ID,
+) {
 }
 
 func (m testPoolMachineManager) DeleteMachine(

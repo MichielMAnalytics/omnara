@@ -208,6 +208,7 @@ func main() {
 			BackgroundRunner:      backgroundRunner,
 			SkillBroadcaster:      skillBroadcaster,
 			AgentConfigOptions:    agentconfig.CompileOptions{AllowInsecureLocalMCPHTTP: cfg.AllowInsecureDev},
+			Log:                   log,
 		},
 		StreamPublisher: redisBus,
 		StreamLog:       log,
